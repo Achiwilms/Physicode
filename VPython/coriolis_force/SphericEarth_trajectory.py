@@ -1,7 +1,7 @@
 from vpython import *
 
 # 地球視角 (否則為太空視角)
-earth_view = True
+earth_view = False
 # 小球角速度（繞行速度）
 ball_omega = 1
 # 地球角速度（轉動速度）
@@ -24,10 +24,13 @@ ball = sphere(
     pos = earth.pos + vec(0, 1, 0),
     radius = 0.05,
     color = color.yellow,
-    # make_trail=not(earth_view), 
-    make_trail=False, 
-    trail_radius=0.01,
+    make_trail=False,
 )
+# 軌跡 (https://www.glowscript.org/docs/VPythonDocs/curve.html)
+trail = curve(pos=[ball.pos], color=color.red)
+
+# 總旋轉角度
+total_angle = 0
 
 # 迴圈(球離開地球一段距離時結束迴圈)
 while True:
@@ -38,6 +41,12 @@ while True:
     circle.rotate(angle=dt*omega, axis=earth.axis)
     if earth_view:
         scene.forward = rotate(scene.forward, angle=dt*omega, axis=earth.axis)
-    # 更新球的位置
-    ball.pos = rotate(ball.pos, angle=dt*ball_omega, axis=vec(1, 0, 0))
+        trail.axis = rotate(trail.axis, angle=dt*omega, axis=earth.axis)
+    # 更新軌跡
+    trail.append(pos=rotate(ball.pos, angle=total_angle, axis=-earth.axis) if earth_view else ball.pos)    
     
+    # 更新球的位置
+    ball.pos = rotate(ball.pos, angle=dt*ball_omega, axis=vec(1, 0, 0))    
+    
+    # 更新總旋轉角度
+    total_angle += dt*omega   
